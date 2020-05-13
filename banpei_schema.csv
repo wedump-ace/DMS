@@ -1,0 +1,3 @@
+index,name,df_name,dtype,is_datetime_column,datetime_format,min,max,categories,missing_allowed
+0,datetime,datetime,INT,true,,0,140678,,true
+1,value,value,FLOAT,false,,-1,1,,true
