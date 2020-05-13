@@ -194,7 +194,7 @@ INSERT INTO public."configuration"
 VALUES('2GG9kaXX1Smm8wWQ4USw40', 'pred_hist_updater_routing_key', 'deploy-pred-hist-update-rk');
 INSERT INTO public."configuration"
 (id, config_type, value)
-VALUES('4CwnTG29pCWwpC7GKWksu1', ‘nfs_host_base_path', '/data/docker_volume');
+VALUES('4CwnTG29pCWwpC7GKWksu1', 'nfs_host_base_path', '/data/docker_volume');
 
 
 2. hbase 테이블 추가
