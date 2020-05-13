@@ -1,0 +1,221 @@
+1. Postgres 서버에서 데이터 입력
+
+> docker exec -it postgres bash
+> /usr/bin/psql -U xbrain -d dms-prod
+
+# tester 계정 추가
+INSERT INTO public."user"
+(id, email, "password", "name", last_activated_at, created_at)
+VALUES('5ppYSsIfjG2CouKS4m8gU0', 'tester@xbrain.team', '$2b$12$ngm7wcOMvKCvgxVEDbYqzuuKgt.uVWnFWsIf9fLnnlyTLvGZslJrC', 'Tester', '2020-02-24 00:00:00.000', '2020-02-17 00:00:00.000');
+INSERT INTO public.org
+(id, "name", created_at)
+VALUES('cNmgJfhWG4ewMsgqAQsE00', 'XBrain', '2020-02-17 00:00:00.000');
+INSERT INTO public.org_user_rel
+(id, org_id, user_id, created_at)
+VALUES('1JtSHQxwUEwYYMcWS8yS40', 'cNmgJfhWG4ewMsgqAQsE00', '5ppYSsIfjG2CouKS4m8gU0', '2020-02-17 00:00:00.000');
+
+# configuration 추가
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('2be1uFBwLKK6MUACy62wc0', 'config_type', 'dev');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('27b2XWpSwcUg8AmcgYeMO0', 'hadoop_httpfs_port', '14000');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('FIJdE3CkYCmWqe0aQ8yk00', 'hadoop_httpfs_host', 'localhost');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('5qMDJ7tCsEikgWKAk4ikG0', 'hadoop_fs_namenode_host', 'localhost');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('7Jp7DRwDwkMsIMICa4M2w0', 'hadoop_fs_namenode_port', '54310');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('4VWGcpKtby6CCk4C0YAy20', 'hadoop_username', 'bigwig');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3CunTF19pCWwqC8GKUksu0', 'nfs_prefix', 'local');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('62gQVphgzYaCKU6uSysiQ0', 'container_thrift_socket_path', '/tmp/container_thrift_server.sock');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1jaJ6NFO8qQCiE0Qww8KE0', 'container_thrift_pool_size', '100');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('MYtc9R6tQO8Q8suIuOu200', 'container_celery_always_eager', 'false');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('13xPLvuWH4GuWgAi8iQCq0', 'monitor_port', '9998');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1da4RwnXDwaiOC4yAsoki0', 'monitor_container_hb_interval_ms', '60000');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('DT9LcIU4BUaa2QcqwiMS00', 'monitor_validator_sample_size', '50000');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('12ykuN6AKe2CewSGiUQec0', 'management_api_host', '127.0.0.1');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('kAlT8RMybum2gOi0286W00', 'management_api_port', '9997');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('8R9O7XcQ7K2uqEC4c6KU00', 'hbase_connection', '100');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3bXhZUlZc4IU6M4guA2wg0', 'batch_predict_save_error_count', '30');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('5pfg5F22e4sou6KMWm88K0', 'batch_predict_req_ttl', '30');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('29gUIMpr24aWeYIqQOq6O0', 'rabbitmq_username', 'xbrain');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('6uciBsOrT2IMM8WiqwUgk0', 'rabbitmq_password', 'xbrain');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('5Xepl15WDeK6AIag8OMws0', 'rabbitmq_port', '5672');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('5cFmIG4nEk2kGGoG6GWak0', 'rabbitmq_vhost', 'xbrain');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3iKLnX7ZuoaucKsYI440O0', 'log_aggregator_queue_name', 'deploy-log-agg-queue-{task_id}');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('RbZJUigf8OAy0oUKCqsq00', 'log_aggregator_exchange_name', 'deploy-log-agg-exchange-{task_id}');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3mVjaXv5V6UOwGc4acGCq0', 'log_aggregator_routing_key', 'deploy-log-agg-rk-{task_id}');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('29QoN2mCBy0WGiSqsO0gq0', 'validator_min_class_size', '5');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('lbBEdzbaz66UQc4Kcy2Y00', 'validator_min_n_folds', '3');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('4JCAgIqv9Sss4qO26C0s60', 'validator_n_folds', '5');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1EatSqTG0Q4yKCIgy4ugo0', 'validator_n_bins', '10');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1bpyS0mxfsAKoIQO4u8sS0', 'validator_n_points', '50');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('75RM4L75HUiCO2OO20UeI0', 'dms_mgt_api_secret_key', 'dms_mgt_API_SECRET_KEY');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('pH9z5oy47IaOuSeua6kk00', 'k8s_namespace', 'default');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('7jHwy5ghhKauY4UaYaaEs0', 'ts_task_init_queue_name', 'ts-task-init-queue');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('6NQoFZx1HUgEeCMYIIEYu0', 'ts_task_init_exchange_name', 'ts-task-init-exchange');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3j9p9tBmpaGsEi8Y6Y4UU0', 'ts_task_init_routing_key', 'ts-task-init-rk');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('5jdFfJvpC0AWSiyqgoGkM0', 'cluster_type', 'on-prem');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('6OJYUp4Ngca4KmgM4G6sm0', 'pred_hist_downloader_routing_key', 'deploy-pred-hist-down-rk');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('5JEstZH4XK6K6IUwSuOse0', 'gcp_project_id', 'daria-service');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('5JmA3VllYIEMwOagUOIcU0', 'gcp_storage_bucket_name', 'dms-develop-f76e');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1K3JWOmWm4yuGQOSkKcIY0', 'hbase_host', 'hbase');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1FYqwAkHheKWC8oGeM0cA0', 'rabbitmq_host', 'rabbitmq');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3AwHip1DGUg244EsSUiYi0', 'gcp_credential_path', '/daria_deploy_conf/daria-service.json');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('56Ubv5r4EUAwc2g8iK84k0', 'nfs_path', '/dms_nfs_mounted');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1R60S2kBIoEKqaEekg0a40', 'test_type_1', 'test_value_1');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3w2ar1PX4IaUki0ycuiy00', 'test_type_2', 'test_value_2');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1YoZxOEdgwG8gUs0AG6200', 'test_type_3', 'test_value_3');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('1fXQjd6XmesQ6CKMoO8ES0', 'asset_deleter_manager_queue_name', 'asset_deleter_manager-queue');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('6keJPyzUrYkIuoEwc8gQM0', 'asset_deleter_manager_exchange_name', 'asset_deleter_manager-exchange');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('7c30Vi3ulGM8QeIGyki2A0', 'asset_deleter_manager_routing_key', 'asset_deleter_manager-rk');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('4KxQo8k2bmiouuMsuMW6W0', 'dms_noti_server_port', '80');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('2tcihuKTZaSyOY6quY4kY0', 'pred_hist_updater_queue_name', 'deploy-pred-hist-update-queue');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('5SQxu3lqmWc8E4QCegAYm0', 'dms_noti_server_host', 'noti');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('39oF2pHk1iIWUos8mmGOS0', 'label_updater_queue_name', 'deploy-label-updater-queue');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3w0lThsnRCeQkSaIKg4KA0', 'label_updater_exchange_name', 'deploy-label-updater-exchange');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('3GxPOwptPq2QOU6yqS2gm0', 'label_updater_routing_key', 'deploy-label-updater-rk');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('2X1k0EtaAwM0eAwQICM4q0', 'pred_hist_downloader_queue_name', 'deploy-pred-hist-down-queue');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('W7hkrgdJo2ceiAIQ00sA00', 'pred_hist_downloader_exchange_name', 'deploy-pred-hist-down-exchange');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('2CWq7RAQ36YMkkyE40S6k0', 'pred_hist_updater_exchange_name', 'deploy-pred-hist-update-exchange');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('2GG9kaXX1Smm8wWQ4USw40', 'pred_hist_updater_routing_key', 'deploy-pred-hist-update-rk');
+INSERT INTO public."configuration"
+(id, config_type, value)
+VALUES('4CwnTG29pCWwpC7GKWksu1', ‘nfs_host_base_path', '/data/docker_volume');
+
+
+2. hbase 테이블 추가
+
+> docker exec -it hbase bash
+> ./bin/hbase shell
+
+create 'service_health_result', {NAME => 'time_data_cf'}, {NAME => 'metadata_cf'}, {NAME => 'service_health_cf'}, {NAME => 'error_count_cf'}
+
+create 'validation_result', {NAME => 'time_data_cf'}, {NAME => 'metadata_cf'}, {NAME => 'result_cf'}, {NAME => 'parse_cf'}, {NAME => 'blank_cf'}
+
+create 'prediction_history', {NAME => 'time_data_cf'}, {NAME => 'metadata_cf'}, {NAME => 'x_cf'}, {NAME => 'y_cf'}, {NAME => 'error_cf'}
+
+create 'container_status', {NAME => 'time_data_cf'}, {NAME => 'metadata_cf'}, {NAME => 'usage_cf'}
+
+create 'ts_forecasting_bot_history', {NAME => 'time_data_cf'}, {NAME => 'metadata_cf'}, {NAME => 'result_cf'}, {NAME => 'log_cf'}
+
+create 'ts_model_updater_history', {NAME => 'time_data_cf'}, {NAME => 'metadata_cf'}, {NAME => 'result_cf'}, {NAME => 'log_cf'}
+
+
+3. API 서버 재시작
+
+> docker exec -it api bash
+> supervisorctl stop all; kill -9 `ps -ef | grep uwsgi | grep -v grep | awk '{print $2}'`; supervisorctl start all

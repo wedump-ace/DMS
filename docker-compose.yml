@@ -1,0 +1,103 @@
+version: "3.5"
+
+services:
+    traefik:
+        image: traefik:v2.2
+        container_name: traefik
+        command: --providers.docker
+        ports:
+            - "9990:80"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            - dms-network
+
+    api:
+        image: xbrainteam/api:latest
+        container_name: api
+        labels:
+            - "traefik.backend=api"
+            - "traefik.http.routers.api.rule=PathPrefix(`/api/v1/mng/`)"
+        volumes:
+            - /data/docker_volume/tmp/dms_nfs_mounted/local:/dms_nfs_mounted/local
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            - dms-network
+        depends_on:
+            - rabbitmq
+            - hbase
+            - postgres
+
+    web:
+        image: xbrainteam/web:latest
+        container_name: web
+        labels:
+            - "traefik.backend=web"
+            - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+        networks:
+            - dms-network
+
+    noti:
+        image: xbrainteam/noti:latest
+        container_name: noti
+        labels:
+            - "traefik.backend=noti"
+            - "traefik.http.routers.noti.rule=PathPrefix(`/noti/`)"
+        networks:
+            - dms-network
+
+    rabbitmq:
+        image: xbrainteam/rabbitmq:latest
+        container_name: rabbitmq
+        restart: unless-stopped
+        labels:
+           - "name=rabbitmq"
+        expose:
+            - 15672
+            - 5672
+        environment:
+            - RABBITMQ_DEFAULT_USER=xbrain
+            - RABBITMQ_DEFAULT_PASS=xbrain
+            - RABBITMQ_DEFAULT_VHOST=xbrain
+        networks:
+            - dms-network
+
+    hbase:
+        image: xbrainteam/hbase:latest
+        container_name: hbase
+        restart: always
+        labels:
+            - "name=hbase"
+        volumes:
+            - /data/docker_volume/tmp/hbase:/tmp/hbase-root
+        expose:
+            - 60000
+            - 60010
+            - 60020
+            - 60030
+            - 2181
+            - 9090
+        networks:
+            - dms-network
+
+    postgres:
+        image: xbrainteam/postgres:latest
+        container_name: postgres
+        labels:
+            - "name=postgres"
+        restart: always
+        expose:
+            - 5432
+        volumes:
+            - /data/docker_volume/tmp/postgresql:/var/lib/postgresql
+        environment:
+            - DEBUG=false
+            - DB_USER=xbrain
+            - DB_PASS=dms-prod
+            - DB_NAME=dms-prod
+        networks:
+            - dms-network
+
+networks:
+    dms-network:
+        name: "dms-network"
