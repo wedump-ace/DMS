@@ -218,4 +218,5 @@ create 'ts_model_updater_history', {NAME => 'time_data_cf'}, {NAME => 'metadata_
 3. API 서버 재시작
 
 > docker exec -it api bash
+> chown mladm:sysadmin -R /dms_nfs_mounted
 > supervisorctl stop all; kill -9 `ps -ef | grep uwsgi | grep -v grep | awk '{print $2}'`; supervisorctl start all
