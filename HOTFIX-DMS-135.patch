@@ -1,0 +1,103 @@
+diff --git a/daria_deployment/services/container/api.py b/daria_deployment/services/container/api.py
+index 2cb9876..08c91da 100644
+--- a/daria_deployment/services/container/api.py
++++ b/daria_deployment/services/container/api.py
+@@ -128,8 +128,15 @@ def get_batch_predict(task_id, batch_id):
+ def download_batch_predict(task_id, batch_id):
+     o = get_bp_req(batch_id)
+ 
+-    if o.status != BatchPredictStatus.COMPLETED or not os.path.exists(o.output_nfs_path):
+-        raise ValueError('Batch predict request is expired.')
++    if (o.status < BatchPredictStatus.COMPLETED) and (o.status > 0):
++        raise ValueError('Batch predict is progressing')
++    elif o.status > BatchPredictStatus.COMPLETED:
++        raise ValueError('Batch predict is expired')
++    elif o.status < -1:
++        raise ValueError('Batch predict has error.')
++
++    if not os.path.exists(o.output_nfs_path):
++        raise ValueError('Unexpected error')
+ 
+     res = send_file(
+         o.output_nfs_path,
+diff --git a/daria_deployment/services/container/handler/impl.py b/daria_deployment/services/container/handler/impl.py
+index fe94784..2aaf25d 100644
+--- a/daria_deployment/services/container/handler/impl.py
++++ b/daria_deployment/services/container/handler/impl.py
+@@ -136,9 +136,13 @@ class ContainerHandler(object):
+             return RealTimePredictResponse(
+                 error_list=[PredictionError(reason=0, message="Unexpected error : ".format(str(e)))]
+             )
+-        return self.batch_predict_impl.predict(
+-            self.model, self.model_schema, req, self.logger
+-        )
++        try:
++            return self.batch_predict_impl.predict(
++                self.model, self.model_schema, req, self.logger
++            )
++        except Exception as e:
++            return self.batch_predict_impl.handle_error(self.model, self.model_schema, req, self.logger, e)
++
+ 
+     def predict(self, req):
+         try:
+diff --git a/daria_deployment/services/container/handler/predict_impl/batch.py b/daria_deployment/services/container/handler/predict_impl/batch.py
+index 71901c1..b9cbd22 100644
+--- a/daria_deployment/services/container/handler/predict_impl/batch.py
++++ b/daria_deployment/services/container/handler/predict_impl/batch.py
+@@ -272,3 +272,12 @@ class BatchPredictImpl(PredictImplBase):
+         )
+ 
+         return output_nfs_path
++
++    def handle_error(self, model, model_schema, req, logger, error):
++        message = "Unexpected error : {}".format(str(error))
++
++        _, res = self._save_batch_predict_error(req.batch_predict_id, [
++            (0, message)
++        ])
++
++        return res
+diff --git a/daria_deployment/services/container/handler/predict_impl/ts/uns/batch.py b/daria_deployment/services/container/handler/predict_impl/ts/uns/batch.py
+index d6d3000..03d8aaf 100644
+--- a/daria_deployment/services/container/handler/predict_impl/ts/uns/batch.py
++++ b/daria_deployment/services/container/handler/predict_impl/ts/uns/batch.py
+@@ -1,6 +1,7 @@
++import string
+ import traceback
+-import pandas as pd
+ import numpy as np
++import pandas as pd
+ from datetime import datetime, timedelta
+ 
+ from daria_deployment.enums.tthrift.ttypes import BatchPredictStatus
+@@ -174,7 +175,9 @@ class TsUnsBatchPredictImpl(BatchPredictImpl):
+         ts_series = pd.Series(np.zeros(num_records) + datetime.utcnow().timestamp())
+ 
+         # x_df index is id column. reset it by index
+-        x_df = x_df.reset_index().drop(x_df.index.name, axis=1)
++        random_index_name = "".join(np.random.choice([c for c in string.ascii_letters], 6))
++        x_df.index.name = random_index_name
++        x_df = x_df.reset_index().drop(random_index_name, axis=1)
+ 
+         y_df_columns = ['score']
+         y_df_data = {'score': y_array}
+@@ -211,3 +214,4 @@ class TsUnsBatchPredictImpl(BatchPredictImpl):
+         pd.concat([id_column_series, y_df, x_df], axis=1).to_csv(output_nfs_path, index=False)
+ 
+         return output_nfs_path, output_dfs_path
++
+diff --git a/daria_deployment/services/container/handler/predict_impl/ts/uns/hyundai/batch.py b/daria_deployment/services/container/handler/predict_impl/ts/uns/hyundai/batch.py
+index 11ea71e..1c46b1f 100644
+--- a/daria_deployment/services/container/handler/predict_impl/ts/uns/hyundai/batch.py
++++ b/daria_deployment/services/container/handler/predict_impl/ts/uns/hyundai/batch.py
+@@ -1,7 +1,7 @@
+-from daria_deployment.services.container.handler.predict_impl.batch import BatchPredictImpl
++from daria_deployment.services.container.handler.predict_impl.ts.uns.batch import TsUnsBatchPredictImpl
+ 
+ 
+-class HyundaiBatchPredictImpl(BatchPredictImpl):
++class HyundaiBatchPredictImpl(TsUnsBatchPredictImpl):
+ 
+     def predict(self, model, model_schema, req, logger):
+         return super().predict(model, model_schema, req, logger)
