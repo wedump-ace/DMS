@@ -1,0 +1,63 @@
+diff --git a/daria_deployment/services/management_api/ctrl/projects/tasks/models/__init__.py b/daria_deployment/services/management_api/ctrl/projects/tasks/models/__init__.py
+index d2b18a1..00b7dd3 100644
+--- a/daria_deployment/services/management_api/ctrl/projects/tasks/models/__init__.py
++++ b/daria_deployment/services/management_api/ctrl/projects/tasks/models/__init__.py
+@@ -21,7 +21,7 @@ from daria_deployment.services.management_api.ctrl.projects.tasks.models.creatio
+ from daria_deployment.config import CONF
+ from daria_deployment.libs.docker.deployment_handler import DeploymentSystemHandler
+ 
+-DEBUG_NOT_K8S = True
++DEBUG_NOT_K8S = False
+ 
+ 
+ logger = get_logger('mng-api')
+@@ -217,13 +217,6 @@ class ModelDeploymentCtrl(MethodView):
+         with Transactional() as transaction:
+             s = transaction.get_session()
+ 
+-            deployed_model = s.query(ModelORM).filter(
+-                ModelORM.state == ModelState.DEPLOYED,
+-                ModelORM.task_id == task_id
+-            ).first()
+-            if deployed_model is not None:
+-                undeploy_model(task_id, deployed_model.id, session=s)
+-
+             query = s.query(ModelORM, TaskORM).filter(
+                 ModelORM.id == model_id,
+                 ModelORM.task_id == TaskORM.id
+@@ -392,6 +385,35 @@ def run_model_deployment(request_user_id, task_id, model_id, framework_type):
+     api_celery_logger = get_logger('api.celery')
+     api_celery_logger.info("===== start to run model deployment =====")
+ 
++    with Transactional() as transaction:
++        s = transaction.get_session()
++
++        deployed_model = s.query(ModelORM).filter(
++            ModelORM.state == ModelState.DEPLOYED,
++            ModelORM.task_id == task_id
++        ).first()
++
++        if deployed_model is not None:
++            try:
++                if not DEBUG_NOT_K8S:
++                    DeploymentSystemHandler.delete_model_container(task_id)
++                    DeploymentSystemHandler.delete_monitor(task_id)
++                else:
++                    time.sleep(2)
++            finally:
++                deployed_model.state = ModelState.READY_TO_DEPLOY
++                deployed_model.un_deployed_at = datetime.utcnow()
++
++        query = s.query(ModelORM, TaskORM).filter(
++            ModelORM.id == model_id,
++            ModelORM.task_id == TaskORM.id
++        )
++        result = query.first()
++
++        result.ModelORM.state = ModelState.DEPLOYING
++        s.add(result.ModelORM)
++        s.flush()
++
+     if DEBUG_NOT_K8S:
+         # just wait a moments.
+         time.sleep(2)
