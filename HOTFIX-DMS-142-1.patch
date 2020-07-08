@@ -1,0 +1,23 @@
+diff --git a/webapp/src/views/Overview.vue b/webapp/src/views/Overview.vue
+index 89cedea..65230f1 100644
+--- a/webapp/src/views/Overview.vue
++++ b/webapp/src/views/Overview.vue
+@@ -152,7 +152,6 @@
+             :projectId="batchPredictModalData.projectId"
+             :taskId="batchPredictModalData.taskId"
+             :modelId="batchPredictModalData.modelId"
+-            :batchPredictId="batchPredictModalData.batchPredictId"
+     />
+ 
+ </div>
+@@ -301,8 +300,7 @@ export default class Overview extends Vue {
+         this.batchPredictModalData.projectId = batchPredict.project.id
+         this.batchPredictModalData.taskId = batchPredict.task.id
+         this.batchPredictModalData.modelId = batchPredict.model_id
+-        this.batchPredictModalData.batchPredictId = batchPredict.id
+-        $(this.$refs.bpModal.$el).modal('show')
++        this.$refs.bpModal.open(batchPredict.id)
+     }
+ }
+ </script>
+\ No newline at end of file
