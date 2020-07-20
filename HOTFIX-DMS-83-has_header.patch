@@ -1,0 +1,23 @@
+diff --git a/daria_deployment/components/validator/schema/input.py b/daria_deployment/components/validator/schema/input.py
+index 8335ea9..8e7e970 100644
+--- a/daria_deployment/components/validator/schema/input.py
++++ b/daria_deployment/components/validator/schema/input.py
+@@ -106,6 +106,9 @@ class InputSchemaValidator(ValidatorBase):
+ 
+         # make error code map
+         # 각 cell 의 Error Reason 이 매핑됨
++        old_columns = x.columns
++        x.columns = model_schema.feature_df_name_list
++
+         result.error_code_map_df = x.apply(
+             lambda col: self._validate_col(col, model_schema)
+         )
+@@ -120,6 +123,8 @@ class InputSchemaValidator(ValidatorBase):
+ 
+         result.error_count_df = self.get_error_count_df(result.error_code_map_df, x.shape[0], False)
+ 
++        x.columns = old_columns
++
+         return result
+ 
+     @staticmethod
