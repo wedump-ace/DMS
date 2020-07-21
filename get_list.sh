@@ -15,5 +15,5 @@ if [[ $atype == "PROJECT" ]]; then
 fi
 if [[ $atype == "TASK" ]]; then
 	ret=$(curl -s -H "Authorization: Bearer $jwt_token" "http://175.124.226.229:9990/api/v1/mng/projects/$project_id/tasks/?page_num=0&page_size=999&sort_key=created_at&sort_order=desc")
-	echo $ret | grep -Po '"id":".+?".+?"name":".+?"'
+	echo $ret | grep -Po '"id":".+?".+?"name":".+?"' | grep -v metric
 fi
