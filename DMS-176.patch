@@ -1,0 +1,13 @@
+diff --git a/webapp/src/views/projects/tasks/ItemBaseLayout.vue b/webapp/src/views/projects/tasks/ItemBaseLayout.vue
+index 85b2e32..4340899 100644
+--- a/webapp/src/views/projects/tasks/ItemBaseLayout.vue
++++ b/webapp/src/views/projects/tasks/ItemBaseLayout.vue
+@@ -57,7 +57,7 @@ export default class TaskItemBaseLayout extends Vue {
+     left: 100%;
+     margin-left: -200px;
+     width: 200px;
+-    z-index: 101;
++    z-index: 100;
+     height: 111px;
+     display: flex;
+     justify-content: space-between;

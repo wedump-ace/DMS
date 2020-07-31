@@ -1,0 +1,88 @@
+diff --git a/daria_deployment/common/utils/csv_reader.py b/daria_deployment/common/utils/csv_reader.py
+index fbbaeba..ef0571d 100644
+--- a/daria_deployment/common/utils/csv_reader.py
++++ b/daria_deployment/common/utils/csv_reader.py
+@@ -1,7 +1,11 @@
+ import pandas as pd
++import os
+ 
+ 
+ def read_csv(input_file_path_or_stream, has_header, id_column_index=None):
++    if os.path.getsize(input_file_path_or_stream) == 0:
++        return None
++
+     has_id_column = id_column_index is not None
+     pd_header = None
+     if has_header:
+@@ -23,5 +27,8 @@ def read_csv(input_file_path_or_stream, has_header, id_column_index=None):
+             keep_default_na=False
+         )
+ 
++    if df.shape[0] == 0:
++        return None
++
+     return df
+ 
+diff --git a/daria_deployment/components/model/tf2/hyundai_impl.py b/daria_deployment/components/model/tf2/hyundai_impl.py
+index f35185f..fa87553 100644
+--- a/daria_deployment/components/model/tf2/hyundai_impl.py
++++ b/daria_deployment/components/model/tf2/hyundai_impl.py
+@@ -47,13 +47,15 @@ class HyundaiTensorflow2Model(Tensorflow2Model):
+         :param threshold:
+         :return:
+         """
++        if x.shape[0] > 0:
++            # 현캐 프로젝트에서는 predict 결과가 result_df 이고 result_df 는 원본 df + 마지막 컬럼에 score 가 포함된 dataframe
++            predictions = self.model_binary.predict(x)
+ 
+-        # 현캐 프로젝트에서는 predict 결과가 result_df 이고 result_df 는 원본 df + 마지막 컬럼에 score 가 포함된 dataframe
+-        predictions = self.model_binary.predict(x)
++            # 현캐에서 사용하는 autoencoder 모델를 위한 postprocessor 추가
++            result_df = self._postprocessor(x, predictions)
+ 
+-        # 현캐에서 사용하는 autoencoder 모델를 위한 postprocessor 추가
+-        result_df = self._postprocessor(x, predictions)
++            score_list = result_df["loss_score"].tolist()
+ 
+-        score_list = result_df["loss_score"].tolist()
+-
+-        return np.array(score_list), None, None
++            return np.array(score_list), None, None
++        else:
++            return np.array([]), None, None
+diff --git a/daria_deployment/services/container/handler/predict_impl/batch.py b/daria_deployment/services/container/handler/predict_impl/batch.py
+index 62cd2df..e10585a 100644
+--- a/daria_deployment/services/container/handler/predict_impl/batch.py
++++ b/daria_deployment/services/container/handler/predict_impl/batch.py
+@@ -61,7 +61,10 @@ class BatchPredictImpl(PredictImplBase):
+         try:
+             df = read_csv(req.input_nfs_file_path, req.has_header, id_column_index)
+ 
+-            data_list = df.values.tolist()
++            if df is None:
++                df = pd.DataFrame(
++                    columns=(model_schema.feature_df_name_list if req.has_header else model_schema.feature_index_list)
++                )
+ 
+             number_of_records, number_of_features = df.shape
+             self._update_batch_predict(
+@@ -108,18 +111,11 @@ class BatchPredictImpl(PredictImplBase):
+         error_list = [pe for pe in validation_result.iter_error_cell()]
+         warning_list = [pe for pe in validation_result.iter_warning_cell()]
+ 
+-        if valid_row_cnt <= 0:
+-            _, res = self._save_batch_predict_error(batch_predict_id, [(pe.reason, pe.message) for pe in error_list])
+-
+-            logger.error("No valid row lines")
+-
+-            return res
+-
+         X_df = cast_df(
+             df,
+             model_schema.feature_df_name_list, model_schema.feature_dtype_list, model_schema.feature_datetime_format_list
+         )
+-        X_df.index = df.index[valid_row_index]
++        X_df.index = df.index[valid_row_index] if valid_row_cnt > 0 else pd.Int64Index([])
+ 
+         validate_dataset_ts = self.get_ts() - validate_dataset_ts
+         logger.info("Validate dataset: {} ms".format(validate_dataset_ts))
