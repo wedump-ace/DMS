@@ -1,0 +1,32 @@
+diff --git a/daria_deployment/services/management_api/ctrl/users.py b/daria_deployment/services/management_api/ctrl/users.py
+index 42028a7..758b5f2 100644
+--- a/daria_deployment/services/management_api/ctrl/users.py
++++ b/daria_deployment/services/management_api/ctrl/users.py
+@@ -21,6 +21,8 @@ from daria_deployment.services.management_api.utils.formatter import (
+     UserTokenFormatter, UserFormatter, OrgFormatter, OrgUserRelFormatter
+ )
+ 
++from daria_deployment.config import CONF
++
+ 
+ logger = get_logger('mng-api')
+ 
+@@ -47,10 +49,15 @@ class UsersAuthorizationsCtrl(MethodView):
+         id = data['id']
+         otp = data['otp']
+ 
+-        auth_ret = int(requests.get('http://auth_server/auth?id={}&otp={}'.format(id, otp)).content)
++        if CONF.site == 'hyundai':
++            auth_ret = requests.post(
++                url='http://{}/otpself/certifyOTP.jsp'.format(CONF.auth_server_ip),
++                data={'ID': id, 'OTP': otp, 'CompanyCode': CONF.auth_company_code, 'asstsq': CONF.auth_asstsq, 'sysIP': CONF.auth_sys_ip, 'IP': CONF.auth_sys_ip},
++                headers={'Content-Type': 'application/x-www-form-urlencoded'},
++            ).content
+ 
+-        if auth_ret != 0:
+-            raise NotFoundException("user not found")
++            if int(auth_ret) != 0:
++                raise NotFoundException("user not found")
+ 
+         with Transactional() as transaction:
+             s = transaction.get_session()
